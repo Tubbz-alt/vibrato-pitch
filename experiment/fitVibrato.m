@@ -5,7 +5,7 @@ function err = errorfun(a, v)
   m = mean(v.modCycle_Hz, "g");
   err = (v.pitch_Hz - m)^2;
 end
-cd matlab;
+cd experiment;
 v = Vibrato();
 fprintf("Analytic f_0: %d\n", v.extremes_Hz(1));
 [ a, err ] = fminsearch(@(a) errorfun(a, v), 300);

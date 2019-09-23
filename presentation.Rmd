@@ -2,7 +2,7 @@
 title: Perceived pitch of vibrato
 date: "`r Sys.Date()`"
 author: Tamara Cook, B. Sc.
-bibliography: /Users/tamaracook/Dropbox/texmf/bibtex/bib/zentral/zentral.bib
+bibliography: /Users/tamara/Dropbox/texmf/bibtex/bib/zentral/zentral.bib
 csl: apa.csl
 nocite: |
   @Mesz:2009aa
@@ -18,13 +18,13 @@ knitr::opts_chunk$set(
 )
 library(tidyverse)
 knitr::read_chunk('data/results.R')
-knitr::read_chunk("matlab/Vibrato.m", labels="extremes", from=47, to=59)
+knitr::read_chunk("experiment/Vibrato.m", labels="extremes", from=47, to=59)
 knitr::read_chunk('examples/fitSqrt.m')
-knitr::read_chunk('matlab/fitVibrato.m')
+knitr::read_chunk('experiment/fitVibrato.m')
 knitr::read_chunk('examples/sound1.m')
 knitr::read_chunk('examples/sound2.m')
 knitr::read_chunk('examples/sound3.m')
-knitr::read_chunk("matlab/trapez.R")
+knitr::read_chunk("experiment/trapez.R")
 ```
 
 # Thema: Worum geht es?
@@ -171,7 +171,7 @@ knitr::read_chunk("matlab/trapez.R")
 ```
 
 <audio controls>
-<source src="files/sound1.wav" type="audio/wav">
+<source src="soundsamples/sound1.wav" type="audio/wav">
 </audio>
 
 ## gleiches Beispiel korrekt
@@ -179,7 +179,7 @@ knitr::read_chunk("matlab/trapez.R")
 ```
 
 <audio controls>
-<source src="files/sound2.wav" type="audio/wav">
+<source src="soundsamples/sound2.wav" type="audio/wav">
 </audio>
 
 ## Herstellungsmethode: dynamische Töne
@@ -193,7 +193,8 @@ knitr::read_chunk("matlab/trapez.R")
 ```
 
 <audio controls>
-<source src="files/sound3.wav" type="audio/wav">
+<source src="soundsamples/sound3.wav" type="audio/wav">
 </audio>
 
-# Literatur
+# Quellen
+## Literatur

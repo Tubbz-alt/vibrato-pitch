@@ -1,6 +1,6 @@
 # Trapeze plotten für die Präsentation
 ## @knitr trapez
-trapez <- read_csv("matlab/trapez.csv", col_names = c("l0", "l25", "h25", "l5", "h5", "l75", "h75"), col_types = "ddddddd")
+trapez <- read_csv("experiment/trapez.csv", col_names = c("l0", "l25", "h25", "l5", "h5", "l75", "h75"), col_types = "ddddddd")
 trapez <- tidyr::gather(trapez, "type", "freq")
 ggplot(
   trapez,
