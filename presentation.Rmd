@@ -1,0 +1,199 @@
+---
+title: Perceived pitch of vibrato
+date: "`r Sys.Date()`"
+author: Tamara Cook, B. Sc.
+bibliography: /Users/tamaracook/Dropbox/texmf/bibtex/bib/zentral/zentral.bib
+csl: apa.csl
+nocite: |
+  @Mesz:2009aa
+lang: de-DE
+otherlangs:
+  - en-US
+...
+
+```{r setup, include=F}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+knitr::read_chunk('data/results.R')
+knitr::read_chunk("matlab/Vibrato.m", labels="extremes", from=47, to=59)
+knitr::read_chunk('examples/fitSqrt.m')
+knitr::read_chunk('matlab/fitVibrato.m')
+knitr::read_chunk('examples/sound1.m')
+knitr::read_chunk('examples/sound2.m')
+knitr::read_chunk('examples/sound3.m')
+knitr::read_chunk("matlab/trapez.R")
+```
+
+# Thema: Worum geht es?
+* Primer zum Themengebiet
+* Musik: Vibrato
+* Akustik
+
+## Was ist Vibrato
+* Musikalisches Stilmittel
+* spezifische Charakteristik, mit der ein Klang versehen werden kann
+* Verleiht dem Klang Fülle und Emotionalität
+
+## Erzeugung: Praxisbeispiel
+<iframe width="560" height="315" src="https://www.youtube.com/embed/bSSWXw7EOY8" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+
+## Physikalische Beschreibung
+* periodische Frequenzmodulation
+* Schwankung der Klangfrequenz über die Zeit hinweg zwischen unterer ($f_0$) und oberer ($f_1$) Frequenz
+* Modulationsrate: Frequenz der Modulation, Abgrenzung von Trägerfrequenz
+* Tiefe: $f_1/f_0$ (mus. Intervall)
+
+## Exkurs: Cent-Skala
+* Einheit für mus. Intervalle
+* Verhältnisskaliert, besitzt einen Nullpunkt
+* Auflösung: Ein Halbtonschritt = 100 Cent
+* Eine Oktave umfasst 12 Schritte, also 1200 Cent
+* JND liegt bei ca 5 Cent
+* $c = \frac{1200}{\log{2}}\cdot\log{\frac{f_1}{f_0}}$
+
+## Vibrato und Wahrnehmung
+* beliebt bei Anfängern, kräftigerer Klang
+* Viele Musiker glauben, man müsse hier weniger genau intonieren
+* Bei ausreichender Rate wird Vibrato mit bestimmter Tonhöhe wahrgenommen (Genauigkeit ca 10 Cent)
+
+# Das Experiment
+## Fragestellung
+* Hängt subjektive Tonhöhe von der Modulationsform ab?
+* subj. Tonhöhe wird bei symmetrischer Modulation durch geometrisches Mittel einer Periode geschätzt
+* $\overline{f} = \sqrt[n]{\prod_{i=1}^n f_i}$
+* $f_0 < \overline{f} < f_1$
+* Gehen bei Asymmetrie die langsameren Anteile stärker in Wahrnehmung ein?
+
+## Hypothesen
+* S.T. weicht von $\overline{f}$ ab in Richtung stabiler Anteile
+* Abweichung hängt positiv mit Länge des stabilen Anteils zusammen
+
+## Design
+* Vibratotöne mit gleichem geometrischen Mittel darbieten
+* UV: stabile Anteile in der Modulationsform (Länge und Ort)
+* Länge: relativer Anteil $p$ einer Periode
+* Ort: $f_0$ oder $f_1$
+* AV: subjektive Tonhöhe
+
+## Stimuli
+* trapezförmige Modulationsformen ($\overline{f} = 500\mathrm{Hz}$)
+* Tiefe: 150 Cent
+* Jede Periode besteht aus zwei Flanken und einem mittleren Plateau
+* Länge des Plateau bestimmt relativen stabilen Anteil $p$ (0, 0.25, 0.5 oder 0.75)
+* Plateau entspricht $f_0$ oder $f_1$
+* bei $p=0$ ist es dreieckig, kein Plateau
+* insgesamt 7 Stimuli
+
+## Trapezformen
+```{r trapez, echo=F}
+```
+
+## Apparatur
+* Computer mit Kopfhörer und Tastatur
+* OS X mit Octave
+* Stimuli werden mit PsychPortAudio als frequenzmodulierte Sinustöne generiert
+* Bildschirm nicht notwendig
+
+## Aufgabe
+* VP hört Stimulus auf einem Ohr und einen normalen Sinus auf dem anderen
+* Per Tastatur wird die Tonhöhe des Sinus an den Stimulus angepasst
+* kein Zeitdruck, Stimuli nacheinander abarbeiten
+* einstellbare Schritte: 5, 100 und 1 Cent
+* Lautstärke beider Töne ist anpassbar
+
+## Ablauf
+* Instruktion: Aufgabe und Tastaturbelegung
+* Darbietung der 7 Stimuli, jeder viermal, Reihenfolge randomisiert
+* Startfrequenz des Sinus randomisiert zwischen $250\mathrm{Hz}$ und $1\mathrm{kHz}$
+* In jedem der 28 Trials nimmt die VP die Herstellung vor und geht mittels Enter zum nächsten Trial über
+* Daten werden schließlich als CSV exportiert
+
+## Ergebnis
+```{r results, echo=F}
+```
+
+## Diskussion und Kritik
+* Ergebnis konsistent mit Hypothesen, aber Fehlerbalken überlappen
+* Ermüdung: Evtl. sind 28 Trials auf einmal etwas anstrengend (weniger Trials oder auf Termine splitten)
+* Bei der gleichzeitigen Darbietung zweier Töne können Schwebungen auftreten
+* Mediationshypothese: Vpn versuchen bei der Herstellung die Schwebungen zu minimieren
+
+# Implementierung: Herausforderungen
+## Bestimmung der Trapeze
+* Wie findet man $f_0$ und $f_1$?
+* Viele Parameter sind bekannt, aber die passenden Stützpunkte nicht
+* Einzelner Freiheitsgrad durch vorgegebene Tiefe von 150 Cent
+* Ist $f_0$ bekannt, so ist auch $f_1$ bekannt und umgekehrt
+
+## Analytische Suche
+* Mit Mathematica ließen sich Gleichungen zur Bestimmung von $f_0$ aus den Vorgaben ermitteln
+* Mathematica arbeitet symbolisch, Matlab oder R hingegen numerisch
+* Nicht für jedes Problem gibt es analytische Lösungen
+* Zwei Seiten Integralrechnung später …
+
+## Analytische Lösung
+```{octave extremes}
+```
+
+## Fit
+* Steht kein Mathematica zur Verfügung oder existiert keine analytische Lösung, kann man die Lösung auch fitten
+* z.B. in Matlab der Simplex-Algorithmus via `fminsearch`
+* versucht Prüfkriterium durch anpassen der Freiheitsgrade zu minimieren
+* Prüfkriterium: eigene Funktion mit Freiheitsgraden als Eingabe und Prüfkriterium als Ausgabe
+* wichtig: mit sinnvollen Startwerten anfangen
+
+## Vibrato-Fit
+```{octave fitVibrato}
+```
+
+## Beispiel: nichtlineare Regression
+\[y = a\sqrt{x} + b\]
+```{octave fitSqrt}
+```
+
+## Phasensprünge
+* Beim Aneinanderhängen von Sinustönen können hörbare Phasensprünge entstehen
+* $a(f, t) = \sin{2πft}$
+* Sinus transformiert die Phasen (Radianten) zu Amplituden (Werte pendeln zwischen -1 und 1)
+* Alle $2\pi$ rad (Vollwinkel) ist der Sinus einmal vollständig gependelt
+* die hörbaren Artefakte sind Unregelmäßigkeiten der Membran beim Pendeln
+
+## Wiederholung eines Tons
+* Der Folgeton muss mit der richtigen Phase beginnen, die an den vorigen Ton anschließt
+* Soll ein Ton (endlos) repeatet werden, müssen Anfang und Ende zusammenpassen
+* Man hört bereits, wenn die Startphase doppelt vorkommt (Anfang und Ende)
+
+## Beispiel mit Fehler
+```{octave sound1}
+```
+
+<audio controls>
+<source src="files/sound1.wav" type="audio/wav">
+</audio>
+
+## gleiches Beispiel korrekt
+```{octave sound2}
+```
+
+<audio controls>
+<source src="files/sound2.wav" type="audio/wav">
+</audio>
+
+## Herstellungsmethode: dynamische Töne
+* Werden Folgetöne dynamisch generiert, müssen die Startphasen mit „durchgeschleift“ werden
+* Bei der Berechnung eines Tons wird gleichzeitig auch die nächste Startphase bestimmt, die dem nächsten Ton hinzugefügt wird
+* möglicher Ansatz: Das letzte Element im Zeitvektor (Tondauer) führt zur neuen Startphase
+* Nur der Modulo der Startphase von $2\pi$ ist entscheidend, so bleibt der Wert auch nach oben hin begrenzt
+
+## Beispiel
+```{octave sound3}
+```
+
+<audio controls>
+<source src="files/sound3.wav" type="audio/wav">
+</audio>
+
+# Literatur
