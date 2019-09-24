@@ -11,6 +11,6 @@ Visit the corresponding [presentation](https://tamaracha.github.io/vibrato-pitch
 * Clone this repo to your machine
 * cd to the experiment subdirectory in the local repo
 * run octave-cli
-* `octave experiment();`
+* enter `experiment();`
 * Procede through the presented trials, match the pitch of the straight tone to the vibrato tone using the arrow keys.
 * After finishing, results are written to the data subdirectory.
