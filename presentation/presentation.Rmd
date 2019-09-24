@@ -1,6 +1,6 @@
 ---
 title: Perceived pitch of vibrato
-date: "`r Sys.Date()`"
+date: "2018-01-18"
 author: Tamara Cook, B. Sc.
 bibliography: /Users/tamara/Dropbox/texmf/bibtex/bib/zentral/zentral.bib
 csl: apa.csl
@@ -9,22 +9,16 @@ nocite: |
 lang: de-DE
 otherlangs:
   - en-US
-...
+---
 
-```{r setup, include=F}
+```{r setup, include=F, message = F}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 library(tidyverse)
-knitr::read_chunk('data/results.R')
-knitr::read_chunk("experiment/Vibrato.m", labels="extremes", from=47, to=59)
-knitr::read_chunk('examples/fitSqrt.m')
-knitr::read_chunk('experiment/fitVibrato.m')
-knitr::read_chunk('examples/sound1.m')
-knitr::read_chunk('examples/sound2.m')
-knitr::read_chunk('examples/sound3.m')
-knitr::read_chunk("experiment/trapez.R")
+
+knitr::read_chunk("../experiment/Vibrato.m", labels="extremes", from=47, to=59)
 ```
 
 # Thema: Worum geht es?
@@ -89,6 +83,20 @@ knitr::read_chunk("experiment/trapez.R")
 
 ## Trapezformen
 ```{r trapez, echo=F}
+vroom::vroom(
+  file.path("..", "experiment", "trapez.csv"),
+  col_names = c("l0", "l25", "h25", "l5", "h5", "l75", "h75"),
+  col_types = "ddddddd"
+) %>%
+pivot_longer(everything(), names_to = "type", values_to = "freq") %>%
+ggplot(
+  aes(y = freq)
+) +
+labs(
+  x = "Sample",
+  y = "Frequenz in Hz"
+) +
+facet_grid(type~.)
 ```
 
 ## Apparatur
@@ -113,6 +121,39 @@ knitr::read_chunk("experiment/trapez.R")
 
 ## Ergebnis
 ```{r results, echo=F}
+resultfiles <- file.path("..", "data", c("result_2.csv", "result_1.csv"))
+
+col_names <- resultfiles %>%
+vroom::vroom(col_types = "cdddd", n_max=0) %>%
+names
+
+vroom::vroom(
+  resultfiles,
+  col_names = col_names,
+  col_types = "cdddd",
+  skip = 2,
+  id = "sub"
+) %>%
+mutate_at("sub", factor, labels=c("sub1", "sub2")) %>%
+mutate_at("peak", factor) %>%
+group_by(sub, peak, stable_rel) %>%
+summarise(
+  pitch_mean = mean(pitch_Hz),
+  pitch_sem = sd(pitch_Hz)/sqrt(n()),
+  lower = pitch_mean - 2*pitch_sem,
+  upper = pitch_mean + 2*pitch_sem
+) %>%
+ggplot(aes(x=stable_rel, y=pitch_mean, colour=peak)) +
+geom_point() +
+geom_errorbar(aes(ymin=lower, ymax=upper)) +
+labs(
+  x = "Relativer Anteil stabiler Frequenz innerhalb einer Modulationsperiode",
+  y = "durchschnittlich eingestellte Tonhöhe in Hz",
+  colour = "Richtung der Peaks einer Modulation",
+  fill = "Teilnehmer"
+) +
+scale_x_continuous(labels = scales::percent) +
+facet_grid(sub~.)
 ```
 
 ## Diskussion und Kritik
@@ -135,7 +176,7 @@ knitr::read_chunk("experiment/trapez.R")
 * Zwei Seiten Integralrechnung später …
 
 ## Analytische Lösung
-```{octave extremes}
+```{octave extremes, eval = F, engine.path = "octave-cli"}
 ```
 
 ## Fit
@@ -146,12 +187,33 @@ knitr::read_chunk("experiment/trapez.R")
 * wichtig: mit sinnvollen Startwerten anfangen
 
 ## Vibrato-Fit
-```{octave fitVibrato}
+```{octave fitVibrato, engine.path = "octave-cli"}
+function err = errorfun(a, v)
+  extremes_Hz = [ a, v.ratio() * a ];
+  v = v.recalc(extremes_Hz);
+  m = mean(v.modCycle_Hz, "g");
+  err = (v.pitch_Hz - m)^2;
+end
+addpath ../experiment;
+v = Vibrato();
+fprintf("Analytic f_0: %d\n", v.extremes_Hz(1));
+[ a, err ] = fminsearch(@(a) errorfun(a, v), 300);
+fprintf("Estimated f_0: %d\nerror: %d\n", a, err);
 ```
 
 ## Beispiel: nichtlineare Regression
 \[y = a\sqrt{x} + b\]
-```{octave fitSqrt}
+
+```{octave fitSqrt, engine.path = "octave-cli"}
+function err = errorfun(params, data)
+  a = params(1); b = params(2);
+  y_hat = a*sqrt(data.x) + b;
+  err = sum((data.y-y_hat).^2);
+end
+data.x = 1:50;
+data.y = 5*sqrt(data.x) + 1;
+[ params, err ] = fminsearch(@(params) errorfun(params, data), [ 1, 0 ]);
+fprintf("a: %d\nb: %d\nError: %d", params(1), params(2), err);
 ```
 
 ## Phasensprünge
@@ -167,7 +229,15 @@ knitr::read_chunk("experiment/trapez.R")
 * Man hört bereits, wenn die Startphase doppelt vorkommt (Anfang und Ende)
 
 ## Beispiel mit Fehler
-```{octave sound1}
+```{octave sound1, engine.path = "octave-cli"}
+fs_Hz = 48000;
+freq_Hz = 440;
+duration_s = 1;
+repeat_times = 10;
+t_s = linspace(0, duration_s, duration_s*fs_Hz+1);
+phase_rad = 2*pi*freq_Hz*t_s;
+a = repmat(sin(phase_rad), 1, repeat_times);
+audiowrite("soundsamples/sound1.wav", a, fs_Hz);
 ```
 
 <audio controls>
@@ -175,7 +245,15 @@ knitr::read_chunk("experiment/trapez.R")
 </audio>
 
 ## gleiches Beispiel korrekt
-```{octave sound2}
+```{octave sound2, engine.path = "octave-cli"}
+fs_Hz = 48000;
+freq_Hz = 440;
+duration_s = 1;
+repeat_times = 10;
+t_s = linspace(0, duration_s, duration_s*fs_Hz+1);
+phase_rad = t_s(1:end-1)*2*pi*freq_Hz;
+a = repmat(sin(phase_rad), 1, repeat_times);
+audiowrite("soundsamples/sound2.wav", a, fs_Hz);
 ```
 
 <audio controls>
@@ -189,7 +267,17 @@ knitr::read_chunk("experiment/trapez.R")
 * Nur der Modulo der Startphase von $2\pi$ ist entscheidend, so bleibt der Wert auch nach oben hin begrenzt
 
 ## Beispiel
-```{octave sound3}
+```{octave sound3, engine.path = "octave-cli"}
+duration_s = 0.5; fs_Hz = 48000;
+t_s = linspace(0, duration_s, duration_s*fs_Hz+1);
+s = []; nextStartPhase = 0;
+for f = [ 400, 600, 800 ]
+  phase_rad = nextStartPhase + 2*pi*f*t_s;
+  a = sin(phase_rad(1:end-1));
+  nextStartPhase = mod(phase_rad(end), 2*pi);
+  s = [ s, a ];
+end
+audiowrite("soundsamples/sound3.wav", s, fs_Hz);
 ```
 
 <audio controls>

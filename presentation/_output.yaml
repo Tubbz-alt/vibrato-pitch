@@ -1,0 +1,21 @@
+revealjs::revealjs_presentation:
+  css: styles.css
+  smart: false
+html_document2:
+  toc: true
+  theme: journal
+  highlight: tango
+  fig_caption: true
+  code_folding: hide
+  code_download: true
+  mathjax: NULL
+pdf_document2:
+  toc: true
+  highlight: null
+  template: Hausarbeit.latex
+  citation_package: biblatex
+  latex_engine: lualatex
+  keep_tex: true
+  dev: tikz
+  pandoc_args:
+    - "--listings"
